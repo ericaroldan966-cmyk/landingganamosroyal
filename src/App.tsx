@@ -92,7 +92,7 @@ export default function App() {
             depthColor="#c026d3"
             fontSize="1em"
             fontWeight={800}
-            layers={24}
+            layers={8}
             depth={1.8}
             tilt={7.5}
             shadow={false}
@@ -103,7 +103,7 @@ export default function App() {
             depthColor="#c026d3"
             fontSize="1em"
             fontWeight={800}
-            layers={24}
+            layers={8}
             depth={1.8}
             tilt={7.5}
             shadow={false}
@@ -121,9 +121,6 @@ export default function App() {
             size="lg"
             radius={14}
             textColor="#ffffff"
-            lineColor="#f5d0fe"
-            baseColor="#e879f9"
-            autoAnimate
             onClick={onCtaClick}
           >
             <span className="wa" aria-hidden="true">

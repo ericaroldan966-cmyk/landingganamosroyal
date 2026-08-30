@@ -1,10 +1,8 @@
-import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+import { applyPerfHints } from './lib/perf';
 import './landing.css';
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
+applyPerfHints();
+
+createRoot(document.getElementById('root')!).render(<App />);
