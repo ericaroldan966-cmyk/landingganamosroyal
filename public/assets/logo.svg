@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Ganamos">
+  <defs>
+    <linearGradient id="g" x1="8" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#C4B5FD"/>
+      <stop offset="0.45" stop-color="#8B5CF6"/>
+      <stop offset="1" stop-color="#F472B6"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="18" fill="#160B2E"/>
+  <rect x="3" y="3" width="58" height="58" rx="16" fill="url(#g)"/>
+  <path d="M32 16c8.8 0 16 6.4 16 16.2 0 7.4-5 12.8-12.2 15.1l-1.6-5.2c4.6-1.5 7.4-4.8 7.4-9.9 0-6.1-4.6-10.1-9.6-10.1-5.2 0-9.5 4.2-9.5 10.4 0 2.4.7 4.5 2 6.1l-4.2 3.6C18.1 39.4 16 35.6 16 31.4 16 22.6 23 16 32 16z" fill="#14081F"/>
+  <circle cx="44.5" cy="18.5" r="3.2" fill="#FDE68A"/>
+</svg>

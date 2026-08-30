@@ -1,0 +1,259 @@
+:root {
+  --bg: #0b0618;
+  --gold: #e8c547;
+  --text: #fff;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #root {
+  min-height: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100dvh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+body {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 28px 18px calc(20px + env(safe-area-inset-bottom));
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  text-align: center;
+  -webkit-text-size-adjust: 100%;
+  background:
+    radial-gradient(1.5px 1.5px at 12% 18%, rgba(255,255,255,.42) 50%, transparent 51%),
+    radial-gradient(1px 1px at 78% 14%, rgba(255,255,255,.38) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 88% 42%, rgba(255,255,255,.32) 50%, transparent 51%),
+    radial-gradient(1px 1px at 22% 72%, rgba(255,255,255,.32) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 64% 78%, rgba(255,255,255,.36) 50%, transparent 51%),
+    radial-gradient(1px 1px at 40% 28%, rgba(255,255,255,.26) 50%, transparent 51%),
+    radial-gradient(1px 1px at 8% 48%, rgba(255,255,255,.28) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 92% 82%, rgba(255,255,255,.3) 50%, transparent 51%),
+    radial-gradient(ellipse 78% 50% at 50% 38%, rgba(232, 121, 249, .38), transparent 64%),
+    radial-gradient(ellipse 42% 30% at 50% 62%, rgba(232, 197, 71, .1), transparent 70%),
+    radial-gradient(ellipse 50% 36% at 50% 72%, rgba(37, 99, 235, .16), transparent 66%),
+    radial-gradient(ellipse 92% 72% at 50% 50%, #1c0a38 0%, var(--bg) 74%);
+}
+
+main {
+  width: min(100%, 420px);
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.promo {
+  margin-bottom: 18px;
+  padding: 7px 16px;
+  max-width: 100%;
+  border-radius: 999px;
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .1em;
+  color: #fff7ed;
+  border: 1.5px solid #f0abfc;
+  background: linear-gradient(90deg, rgba(232, 197, 71, .22), rgba(217, 70, 239, .32), rgba(232, 197, 71, .22));
+  box-shadow: 0 0 18px rgba(232, 121, 249, .45);
+}
+
+.logo {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  font-weight: 800;
+  font-size: clamp(1.85rem, 8.6vw, 2.65rem);
+  letter-spacing: .045em;
+  line-height: 1;
+  text-shadow: 0 0 18px rgba(192, 132, 252, .35);
+}
+
+.logo svg {
+  width: .78em;
+  height: .78em;
+  margin: 0 .02em;
+  transform: translateY(.06em);
+  filter: drop-shadow(0 0 8px rgba(192, 132, 252, .85));
+}
+
+.net {
+  margin-left: .05em;
+  font-size: .4em;
+  font-weight: 800;
+  letter-spacing: .02em;
+  color: var(--gold);
+  text-shadow: 0 0 10px rgba(232, 197, 71, .42);
+}
+
+.badge {
+  margin: 16px 0 26px;
+  padding: 6px 15px;
+  border: 1.5px solid rgba(255,255,255,.86);
+  border-radius: 999px;
+  font-size: .66rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+}
+
+h1 {
+  font-size: clamp(2rem, 10vw, 3rem);
+  font-weight: 800;
+  line-height: .98;
+  letter-spacing: .012em;
+  background: linear-gradient(180deg, #fff1f8 0%, #f0abfc 32%, #e879f9 62%, #c026d3 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 16px rgba(217, 70, 239, .5));
+}
+
+.sub {
+  margin: 16px 0 22px;
+  max-width: 22.5em;
+  font-size: clamp(.74rem, 3.3vw, .9rem);
+  font-weight: 700;
+  letter-spacing: .045em;
+  line-height: 1.4;
+}
+
+.cta-block {
+  width: min(100%, 340px);
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 14px 14px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(232, 121, 249, .16), rgba(18, 8, 23, .35));
+  border: 1px solid rgba(240, 171, 252, .4);
+  box-shadow: 0 0 28px rgba(217, 70, 239, .2);
+}
+
+.benefit {
+  font-size: .82rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  color: #fde68a;
+  text-shadow: 0 0 12px rgba(232, 197, 71, .45);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+  max-width: 100%;
+  min-height: 58px;
+  padding: 14px 12px;
+  white-space: normal;
+  text-align: center;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #2d1244, #14081d);
+  color: #fff;
+  font: inherit;
+  font-size: .8rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  line-height: 1.25;
+  text-decoration: none;
+  border: 2px solid #e879f9;
+  box-shadow:
+    0 0 0 1px rgba(232, 121, 249, .22),
+    0 0 18px rgba(217, 70, 239, .52),
+    0 0 40px rgba(124, 58, 237, .26);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn.is-busy { pointer-events: none; opacity: .92; }
+.btn:active { transform: scale(.985); }
+
+.wa {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #25d366;
+  flex: 0 0 auto;
+}
+
+.wa svg { width: 16px; height: 16px; }
+
+.btn-sim {
+  appearance: none;
+  width: 100%;
+  min-height: 46px;
+  border-radius: 12px;
+  border: 1px dashed rgba(253, 230, 138, .7);
+  background: rgba(232, 197, 71, .12);
+  color: #fde68a;
+  font: inherit;
+  font-size: .75rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  cursor: pointer;
+}
+
+.local-status {
+  margin: 0;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: .78rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.local-status.ok {
+  background: rgba(74, 222, 128, .12);
+  color: #bbf7d0;
+}
+
+.local-status.err {
+  background: rgba(251, 113, 133, .12);
+  color: #fecdd3;
+}
+
+.hidden { display: none !important; }
+
+footer { margin-top: 46px; font-size: .92rem; font-weight: 600; }
+footer a { color: #c4b5fd; text-decoration: none; }
+
+@media (max-width: 359px) {
+  body { padding-left: 14px; padding-right: 14px; }
+  .promo { letter-spacing: .06em; font-size: .68rem; }
+  .btn { font-size: .72rem; letter-spacing: .02em; padding: 14px 10px; }
+}
+
+@media (min-width: 390px) {
+  .badge { margin-bottom: 28px; }
+  .sub { margin-bottom: 24px; }
+}
+
+@media (min-width: 430px) {
+  .logo { font-size: 2.55rem; }
+  h1 { font-size: 2.85rem; }
+}
+
+@media (min-width: 768px) {
+  main { width: 440px; }
+  .logo { font-size: 2.7rem; }
+  h1 { font-size: 3.05rem; }
+  .cta-block { width: 360px; }
+}
