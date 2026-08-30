@@ -132,6 +132,9 @@ const SpecularButton = ({
   ariaLabel,
 }: SpecularButtonProps) => {
   const btnRef = useRef<HTMLElement | null>(null);
+  const setBtnRef = (node: HTMLElement | null) => {
+    btnRef.current = node;
+  };
   const fxRef = useRef<HTMLSpanElement>(null);
   const propsRef = useRef({} as ShaderProps);
 
@@ -288,7 +291,7 @@ const SpecularButton = ({
   if (href) {
     return (
       <a
-        ref={btnRef}
+        ref={setBtnRef}
         href={href}
         rel={rel}
         aria-label={ariaLabel}
@@ -302,7 +305,7 @@ const SpecularButton = ({
   }
 
   return (
-    <button ref={btnRef} type={type} disabled={disabled} onClick={onClick} className={cls} style={style} aria-label={ariaLabel}>
+    <button ref={setBtnRef} type={type} disabled={disabled} onClick={onClick} className={cls} style={style} aria-label={ariaLabel}>
       {inner}
     </button>
   );
