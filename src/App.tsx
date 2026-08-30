@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type MouseEvent } from 'react';
-import { CONFIG } from './config';
 import { postJson, buildWhatsAppUrl } from './lib/api';
 import { initPixel, trackBrowserLead } from './lib/pixel';
+import DepthText from './components/DepthText';
+import SpecularButton from './components/SpecularButton';
 import { captureVisit, refreshCookies, saveStored, visitPayload, type VisitData } from './lib/visit';
 
 type LeadResult = { ok?: boolean; ref?: string };
@@ -10,7 +11,6 @@ export default function App() {
   const visitRef = useRef<VisitData>(captureVisit());
   const [waUrl, setWaUrl] = useState(() => buildWhatsAppUrl(visitRef.current.ref));
   const [busy, setBusy] = useState(false);
-  const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null);
   const leadLocked = useRef(false);
 
   useEffect(() => {
@@ -58,14 +58,11 @@ export default function App() {
     }
     if (openWhatsApp) {
       window.location.href = wa;
-      return result;
     }
-    if (result?.ok) setStatus({ ok: true, text: 'Lead guardado. REF: ' + visit.ref });
-    else setStatus({ ok: false, text: 'Backend desconectado. El REF local es ' + visit.ref });
     return result;
   }
 
-  function onCtaClick(event: MouseEvent<HTMLAnchorElement>) {
+  function onCtaClick(event: MouseEvent<HTMLElement>) {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
     let finished = false;
@@ -81,7 +78,10 @@ export default function App() {
   return (
     <>
       <main>
-        <p className="promo">100% DE BENEFICIO ❤️</p>
+        <div className="promo-plain" aria-label="100% de beneficio. Duplica tu carga">
+          <p>100% DE BENEFICIO</p>
+          <p>DUPLICA TU CARGA!!!</p>
+        </div>
         <p className="logo" aria-label="Ganamos.net">
           G
           <svg viewBox="0 0 64 64" aria-hidden="true">
@@ -90,20 +90,44 @@ export default function App() {
           NAMOS<span className="net">.NET</span>
         </p>
         <p className="badge">JUGÁ ONLINE</p>
-        <h1>
-          BONU$ DE
-          <br />
-          BIENVENIDA!
+        <h1 className="hero-title">
+          <DepthText
+            text="BONU$ DE"
+            faceColor="#f0abfc"
+            depthColor="#c026d3"
+            fontSize="1em"
+            fontWeight={800}
+            layers={24}
+            depth={1.8}
+            tilt={7.5}
+            shadow={false}
+          />
+          <DepthText
+            text="BIENVENIDA!"
+            faceColor="#f0abfc"
+            depthColor="#c026d3"
+            fontSize="1em"
+            fontWeight={800}
+            layers={24}
+            depth={1.8}
+            tilt={7.5}
+            shadow={false}
+          />
         </h1>
         <p className="sub">DIVERTITE OFICIALMENTE CON NOSOTROS, SIN VUELTAS!</p>
         <div className="cta-block">
           <p className="benefit">100% DE BENEFICIO</p>
-          <a
-            id="cta"
-            className={busy ? 'btn is-busy' : 'btn'}
+          <SpecularButton
             href={waUrl}
             rel="noopener noreferrer"
-            aria-label="Activar beneficio por WhatsApp"
+            ariaLabel="Activar beneficio"
+            className={busy ? 'specular-cta is-busy' : 'specular-cta'}
+            size="lg"
+            radius={14}
+            textColor="#ffffff"
+            lineColor="#f5d0fe"
+            baseColor="#e879f9"
+            autoAnimate
             onClick={onCtaClick}
           >
             <span className="wa" aria-hidden="true">
@@ -111,16 +135,8 @@ export default function App() {
                 <path fill="#fff" d="M12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.4 1.3 4.9L2 22l5.3-1.3A10 10 0 0 0 22 12C22 6.5 17.5 2 12 2zm5.8 14.4c-.2.7-1.2 1.2-1.9 1.4-.5.1-1.2.2-3.5-.7-2.9-1.2-4.8-4.2-4.9-4.4-.2-.2-1.3-1.7-1.3-3.3 0-1.5.8-2.3 1.1-2.6.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5.2.6.8 2 .8 2.1s.1.3 0 .5l-.4.7c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.2 1.4 2.5 1.5.3.1.5.1.7-.1l.8-1c.2-.2.4-.2.6-.1.3.1 1.7.8 2 .9.3.1.5.2.6.3.1.2.1.8-.1 1.5z" />
               </svg>
             </span>
-            ACTIVAR BENEFICIO POR WHATSAPP
-          </a>
-          {CONFIG.IS_LOCAL ? (
-            <button type="button" className="btn-sim" onClick={() => void sendLead(false)}>
-              Simular clic WhatsApp
-            </button>
-          ) : null}
-          {CONFIG.IS_LOCAL && status ? (
-            <p className={status.ok ? 'local-status ok' : 'local-status err'}>{status.text}</p>
-          ) : null}
+            ACTIVAR BENEFICIO
+          </SpecularButton>
         </div>
       </main>
       <footer>
