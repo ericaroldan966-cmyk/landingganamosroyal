@@ -57,7 +57,7 @@ export default function App() {
       setWaUrl(buildWhatsAppUrl(visit.ref));
     }
     if (openWhatsApp) {
-      window.location.href = wa;
+      window.open(wa, '_blank', 'noopener,noreferrer');
     }
     return result;
   }
@@ -65,14 +65,9 @@ export default function App() {
   function onCtaClick(event: MouseEvent<HTMLElement>) {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
-    let finished = false;
-    const finish = () => {
-      if (finished) return;
-      finished = true;
-      window.location.href = buildWhatsAppUrl(visitRef.current.ref);
-    };
-    void sendLead(false).then(finish);
-    window.setTimeout(finish, 700);
+    const wa = buildWhatsAppUrl(visitRef.current.ref);
+    window.open(wa, '_blank', 'noopener,noreferrer');
+    void sendLead(false);
   }
 
   return (
@@ -119,6 +114,7 @@ export default function App() {
           <p className="benefit">100% DE BENEFICIO</p>
           <SpecularButton
             href={waUrl}
+            target="_blank"
             rel="noopener noreferrer"
             ariaLabel="Activar beneficio"
             className={busy ? 'specular-cta is-busy' : 'specular-cta'}
@@ -139,11 +135,6 @@ export default function App() {
           </SpecularButton>
         </div>
       </main>
-      <footer>
-        <a href="https://ganamos.net" rel="noopener">
-          Ganamos.net
-        </a>
-      </footer>
     </>
   );
 }

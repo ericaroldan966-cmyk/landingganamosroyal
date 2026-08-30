@@ -27,6 +27,7 @@ export interface SpecularButtonProps {
   className?: string;
   type?: 'button' | 'submit' | 'reset';
   href?: string;
+  target?: string;
   rel?: string;
   ariaLabel?: string;
 }
@@ -128,6 +129,7 @@ const SpecularButton = ({
   className = '',
   type = 'button',
   href,
+  target,
   rel,
   ariaLabel,
 }: SpecularButtonProps) => {
@@ -293,6 +295,7 @@ const SpecularButton = ({
       <a
         ref={setBtnRef}
         href={href}
+        target={target}
         rel={rel}
         aria-label={ariaLabel}
         onClick={onClick}

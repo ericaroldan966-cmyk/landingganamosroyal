@@ -231,9 +231,6 @@ h1.hero-title .depth-text__face {
 
 .wa svg { width: 16px; height: 16px; }
 
-footer { margin-top: 46px; font-size: 1rem; font-weight: 600; }
-footer a { color: #c4b5fd; text-decoration: none; }
-
 @media (max-width: 359px) {
   body { padding-left: 14px; padding-right: 14px; }
   .btn { font-size: .9rem; letter-spacing: .03em; padding: 14px 10px; }
