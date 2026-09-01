@@ -1,4 +1,4 @@
-import { CONFIG } from '../config';
+import { CONFIG, pickWhatsAppNumber } from '../config';
 
 function apiUrl(path: string): string {
   return CONFIG.API_URL ? CONFIG.API_URL + path : '';
@@ -22,5 +22,5 @@ export async function postJson<T>(path: string, body: unknown): Promise<T | null
 
 export function buildWhatsAppUrl(ref: string): string {
   const text = 'Hola, quiero más información. ' + ref + ' quiero mi 100%!';
-  return 'https://wa.me/' + CONFIG.WHATSAPP_NUMBER + '?text=' + encodeURIComponent(text);
+  return 'https://wa.me/' + pickWhatsAppNumber(ref) + '?text=' + encodeURIComponent(text);
 }
