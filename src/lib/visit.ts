@@ -21,6 +21,7 @@ export type VisitData = {
   referrer: string;
   fbp: string;
   fbc: string;
+  wa_line?: string;
   lead_sent?: boolean;
 } & Record<(typeof ATTR_KEYS)[number], string>;
 
@@ -83,6 +84,7 @@ export function captureVisit(): VisitData {
     data.fbc = cookieFbc || stored.fbc || '';
   }
   data.fbp = cookieFbp || stored.fbp || '';
+  data.wa_line = stored.wa_line;
   data.lead_sent = stored.lead_sent;
   saveStored(data);
   return data;

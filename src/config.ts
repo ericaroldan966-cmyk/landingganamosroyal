@@ -8,13 +8,32 @@ const WHATSAPP_LINES = [
   '5491125554018',
 ] as const;
 
-function lineFromRef(ref: string): string {
-  let hash = 0;
-  const key = String(ref || '');
-  for (let i = 0; i < key.length; i++) {
-    hash = Math.imul(hash, 31) + key.charCodeAt(i);
+function isKnownLine(value: string): boolean {
+  return (WHATSAPP_LINES as readonly string[]).includes(value);
+}
+
+function nextLine(): string {
+  return WHATSAPP_LINES[Math.floor(Date.now() / 250) % WHATSAPP_LINES.length];
+}
+
+function readStoredLine(): string {
+  try {
+    const visit = JSON.parse(localStorage.getItem('gn_visit') || '{}') as { wa_line?: string };
+    if (visit.wa_line && isKnownLine(visit.wa_line)) return visit.wa_line;
+  } catch {
+    /* ignore */
   }
-  return WHATSAPP_LINES[(hash >>> 0) % WHATSAPP_LINES.length];
+  return '';
+}
+
+function persistLine(line: string): void {
+  try {
+    const visit = JSON.parse(localStorage.getItem('gn_visit') || '{}') as Record<string, unknown>;
+    visit.wa_line = line;
+    localStorage.setItem('gn_visit', JSON.stringify(visit));
+  } catch {
+    /* ignore */
+  }
 }
 
 export const CONFIG = {
@@ -24,6 +43,10 @@ export const CONFIG = {
   LANDING_URL: import.meta.env.VITE_LANDING_URL || 'https://ericaroldan966-cmyk.github.io/landingappganamos/',
 };
 
-export function pickWhatsAppNumber(ref: string): string {
-  return lineFromRef(ref);
+export function pickWhatsAppNumber(_ref: string): string {
+  const existing = readStoredLine();
+  if (existing) return existing;
+  const line = nextLine();
+  persistLine(line);
+  return line;
 }
