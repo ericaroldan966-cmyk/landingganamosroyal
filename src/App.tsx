@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type MouseEvent } from 'react';
-import { postJson, buildWhatsAppUrl } from './lib/api';
+import { postBeacon, postJson, postJsonRetry, buildWhatsAppUrl } from './lib/api';
 import { initPixel, trackBrowserLead } from './lib/pixel';
 import DepthText from './components/DepthText';
 import SpecularButton from './components/SpecularButton';
@@ -9,65 +9,47 @@ type LeadResult = { ok?: boolean; ref?: string };
 
 export default function App() {
   const visitRef = useRef<VisitData>(captureVisit());
-  const [waUrl, setWaUrl] = useState(() => buildWhatsAppUrl(visitRef.current.ref));
-  const [busy, setBusy] = useState(false);
-  const leadLocked = useRef(false);
+  const [waUrl] = useState(() => buildWhatsAppUrl(visitRef.current.ref));
+  const [busy] = useState(false);
 
   useEffect(() => {
     initPixel();
-    const timer = window.setTimeout(() => {
-      const visit = refreshCookies(visitRef.current);
-      visitRef.current = visit;
-      void postJson<{ ref?: string }>('/api/visit', visitPayload(visit)).then((result) => {
-        if (result?.ref) {
-          visit.ref = result.ref;
-          saveStored(visit);
-          visitRef.current = visit;
-          setWaUrl(buildWhatsAppUrl(visit.ref));
-        }
-      });
-    }, 600);
-    return () => window.clearTimeout(timer);
+    const visit = refreshCookies(visitRef.current);
+    visitRef.current = visit;
+    const payload = visitPayload(visit);
+    void postJson('/api/visit', payload);
+    const flushVisit = () => {
+      postBeacon('/api/visit', visitPayload(visitRef.current));
+    };
+    window.addEventListener('pagehide', flushVisit);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) flushVisit();
+    });
+    return () => {
+      window.removeEventListener('pagehide', flushVisit);
+    };
   }, []);
 
-  async function sendLead(openWhatsApp: boolean): Promise<LeadResult | null> {
-    if (leadLocked.current) return null;
-    leadLocked.current = true;
-    setBusy(true);
+  function persistLead(): Promise<LeadResult | null> {
     const visit = refreshCookies(visitRef.current);
     visitRef.current = visit;
     const eventId = 'lead_' + visit.ref;
-    const wa = buildWhatsAppUrl(visit.ref);
-    setWaUrl(wa);
     const payload = { ...visitPayload(visit), event_id: eventId };
-
     if (!visit.lead_sent) {
       trackBrowserLead(eventId);
       visit.lead_sent = true;
       saveStored(visit);
     }
-
-    const result = await postJson<LeadResult>('/api/lead', payload);
-    leadLocked.current = false;
-    setBusy(false);
-    if (result?.ref) {
-      visit.ref = result.ref;
-      saveStored(visit);
-      visitRef.current = visit;
-      setWaUrl(buildWhatsAppUrl(visit.ref));
-    }
-    if (openWhatsApp) {
-      window.open(wa, '_blank', 'noopener,noreferrer');
-    }
-    return result;
+    postBeacon('/api/lead', payload);
+    return postJsonRetry<LeadResult>('/api/lead', payload);
   }
 
   function onCtaClick(event: MouseEvent<HTMLElement>) {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
     const wa = buildWhatsAppUrl(visitRef.current.ref);
+    void persistLead();
     window.open(wa, '_blank', 'noopener,noreferrer');
-    void sendLead(false);
   }
 
   return (

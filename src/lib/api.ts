@@ -12,11 +12,31 @@ export async function postJson<T>(path: string, body: unknown): Promise<T | null
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
+      keepalive: true,
     });
     const text = await response.text();
     return text ? JSON.parse(text) as T : null;
   } catch {
     return null;
+  }
+}
+
+export async function postJsonRetry<T>(path: string, body: unknown, attempts = 3): Promise<T | null> {
+  for (let i = 0; i < attempts; i++) {
+    const result = await postJson<T>(path, body);
+    if (result) return result;
+    await new Promise((resolve) => setTimeout(resolve, 300 * (i + 1)));
+  }
+  return null;
+}
+
+export function postBeacon(path: string, body: unknown): boolean {
+  const url = apiUrl(path);
+  if (!url || typeof navigator === 'undefined' || !navigator.sendBeacon) return false;
+  try {
+    return navigator.sendBeacon(url, new Blob([JSON.stringify(body)], { type: 'text/plain' }));
+  } catch {
+    return false;
   }
 }
 
