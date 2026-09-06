@@ -3,18 +3,20 @@ import { postBeacon, postJson, postJsonRetry, buildWhatsAppUrl } from './lib/api
 import { initPixel, trackBrowserLead } from './lib/pixel';
 import DepthText from './components/DepthText';
 import SpecularButton from './components/SpecularButton';
-import { captureVisit, isValidRef, makeRef, refreshCookies, saveStored, visitPayload, type VisitData } from './lib/visit';
+import { captureVisit, isValidRef, refreshCookies, saveStored, visitPayload, type VisitData } from './lib/visit';
 
 type LeadResult = { ok?: boolean; ref?: string };
 
 export default function App() {
   const visitRef = useRef<VisitData>(captureVisit());
   const [busy, setBusy] = useState(false);
+  const [ctaError, setCtaError] = useState('');
 
   function applyRef(ref: string): string {
     const next = ref.toUpperCase();
     if (!isValidRef(next)) return visitRef.current.ref;
     visitRef.current.ref = next;
+    visitRef.current.ref_confirmed = true;
     saveStored(visitRef.current);
     return next;
   }
@@ -22,11 +24,12 @@ export default function App() {
   useEffect(() => {
     const visit = refreshCookies(visitRef.current);
     visitRef.current = visit;
-    initPixel('pv_' + visit.ref);
     void postJson<LeadResult>('/api/visit', visitPayload(visit)).then((result) => {
       if (result?.ref) applyRef(result.ref);
+      initPixel(result?.ref ? 'pv_' + result.ref : undefined);
     });
     const flushVisit = () => {
+      if (!visitRef.current.ref_confirmed) return;
       postBeacon('/api/visit', visitPayload(visitRef.current));
     };
     window.addEventListener('pagehide', flushVisit);
@@ -39,12 +42,8 @@ export default function App() {
   }, []);
 
   async function persistLead(): Promise<LeadResult | null> {
-    visitRef.current.ref = makeRef();
-    visitRef.current.lead_sent = false;
     const visit = refreshCookies(visitRef.current);
     visitRef.current = visit;
-    saveStored(visit);
-
     const visitResult = await postJsonRetry<LeadResult>('/api/visit', visitPayload(visit));
     const savedRef = visitResult?.ref ? applyRef(visitResult.ref) : '';
     if (!isValidRef(savedRef)) return null;
@@ -52,10 +51,11 @@ export default function App() {
     const current = visitRef.current;
     const eventId = 'lead_' + current.ref;
     const payload = { ...visitPayload(current), event_id: eventId };
-    trackBrowserLead(eventId);
-    current.lead_sent = true;
-    saveStored(current);
-    postBeacon('/api/lead', payload);
+    if (!current.lead_sent) {
+      trackBrowserLead(eventId);
+      current.lead_sent = true;
+      saveStored(current);
+    }
     void postJsonRetry<LeadResult>('/api/lead', payload);
     return { ok: true, ref: savedRef };
   }
@@ -65,17 +65,20 @@ export default function App() {
     event.stopPropagation();
     if (busy) return;
     setBusy(true);
+    setCtaError('');
     const popup = window.open('about:blank', '_blank');
     try {
       const result = await persistLead();
       const ref = result?.ref ? result.ref.toUpperCase() : '';
       if (!isValidRef(ref)) {
         popup?.close();
+        setCtaError('No pudimos generar tu código. Tocá de nuevo para reintentar.');
         return;
       }
       const wa = buildWhatsAppUrl(ref);
       if (!wa) {
         popup?.close();
+        setCtaError('No pudimos generar tu código. Tocá de nuevo para reintentar.');
         return;
       }
       if (popup && !popup.closed) popup.location.replace(wa);
@@ -144,6 +147,7 @@ export default function App() {
             </span>
             ACTIVAR BENEFICIO
           </SpecularButton>
+          {ctaError ? <p className="sub" role="alert">{ctaError}</p> : null}
         </div>
       </main>
     </>

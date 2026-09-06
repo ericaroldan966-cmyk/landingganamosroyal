@@ -17,6 +17,7 @@ export const ATTR_KEYS = [
 
 export type VisitData = {
   ref: string;
+  ref_confirmed?: boolean;
   landing_url: string;
   referrer: string;
   fbp: string;
@@ -35,6 +36,16 @@ export function makeRef(): string {
 
 export function isValidRef(ref: string): boolean {
   return /^REF-[A-Z0-9]{6,12}$/.test(ref);
+}
+
+export function normalizeRef(ref: string): string {
+  const compact = String(ref || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (compact.startsWith('REF') && compact.length >= 9 && compact.length <= 15) {
+    const next = 'REF-' + compact.slice(3);
+    return isValidRef(next) ? next : '';
+  }
+  if (/^[A-Z0-9]{6,12}$/.test(compact)) return 'REF-' + compact;
+  return '';
 }
 
 export function getCookie(name: string): string {
@@ -66,8 +77,10 @@ export function saveStored(data: VisitData): void {
 export function captureVisit(): VisitData {
   const stored = readStored();
   const params = new URLSearchParams(window.location.search);
+  const storedRef = normalizeRef(String(stored.ref || ''));
   const data = {
-    ref: stored.ref || makeRef(),
+    ref: stored.ref_confirmed && storedRef ? storedRef : '',
+    ref_confirmed: Boolean(stored.ref_confirmed && storedRef),
     landing_url: stored.landing_url || window.location.href,
     referrer: stored.referrer || document.referrer || '',
     fbp: '',
@@ -90,6 +103,7 @@ export function captureVisit(): VisitData {
   data.fbp = cookieFbp || stored.fbp || '';
   data.wa_line = stored.wa_line;
   data.lead_sent = stored.lead_sent;
+  data.ref_confirmed = Boolean(data.ref_confirmed && isValidRef(data.ref));
   saveStored(data);
   return data;
 }
@@ -107,7 +121,7 @@ export function refreshCookies(data: VisitData): VisitData {
 
 export function visitPayload(data: VisitData) {
   return {
-    ref: data.ref,
+    ref: data.ref_confirmed && isValidRef(data.ref) ? data.ref : '',
     fbclid: data.fbclid,
     fbp: data.fbp,
     fbc: data.fbc,
