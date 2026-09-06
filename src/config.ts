@@ -2,7 +2,9 @@ const host = window.location.hostname;
 const isLocal = host === 'localhost' || host === '127.0.0.1';
 
 const WHATSAPP_LINES = [
-  '5491125546449',
+  '5491125689335',
+  '5491140925444',
+  '5491125752310',
   '5491140923175',
   '5491125554018',
 ] as const;
