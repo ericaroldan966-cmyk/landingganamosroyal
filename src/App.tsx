@@ -3,21 +3,29 @@ import { postBeacon, postJson, postJsonRetry, buildWhatsAppUrl } from './lib/api
 import { initPixel, trackBrowserLead } from './lib/pixel';
 import DepthText from './components/DepthText';
 import SpecularButton from './components/SpecularButton';
-import { captureVisit, refreshCookies, saveStored, visitPayload, type VisitData } from './lib/visit';
+import { captureVisit, isValidRef, makeRef, refreshCookies, saveStored, visitPayload, type VisitData } from './lib/visit';
 
 type LeadResult = { ok?: boolean; ref?: string };
 
 export default function App() {
   const visitRef = useRef<VisitData>(captureVisit());
-  const [waUrl] = useState(() => buildWhatsAppUrl(visitRef.current.ref));
-  const [busy] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  function applyRef(ref: string): string {
+    const next = ref.toUpperCase();
+    if (!isValidRef(next)) return visitRef.current.ref;
+    visitRef.current.ref = next;
+    saveStored(visitRef.current);
+    return next;
+  }
 
   useEffect(() => {
     initPixel();
     const visit = refreshCookies(visitRef.current);
     visitRef.current = visit;
-    const payload = visitPayload(visit);
-    void postJson('/api/visit', payload);
+    void postJson<LeadResult>('/api/visit', visitPayload(visit)).then((result) => {
+      if (result?.ref) applyRef(result.ref);
+    });
     const flushVisit = () => {
       postBeacon('/api/visit', visitPayload(visitRef.current));
     };
@@ -30,26 +38,51 @@ export default function App() {
     };
   }, []);
 
-  function persistLead(): Promise<LeadResult | null> {
+  async function persistLead(): Promise<LeadResult | null> {
+    visitRef.current.ref = makeRef();
+    visitRef.current.lead_sent = false;
     const visit = refreshCookies(visitRef.current);
     visitRef.current = visit;
-    const eventId = 'lead_' + visit.ref;
-    const payload = { ...visitPayload(visit), event_id: eventId };
-    if (!visit.lead_sent) {
-      trackBrowserLead(eventId);
-      visit.lead_sent = true;
-      saveStored(visit);
-    }
+    saveStored(visit);
+
+    const visitResult = await postJsonRetry<LeadResult>('/api/visit', visitPayload(visit));
+    const savedRef = visitResult?.ref ? applyRef(visitResult.ref) : '';
+    if (!isValidRef(savedRef)) return null;
+
+    const current = visitRef.current;
+    const eventId = 'lead_' + current.ref;
+    const payload = { ...visitPayload(current), event_id: eventId };
+    trackBrowserLead(eventId);
+    current.lead_sent = true;
+    saveStored(current);
     postBeacon('/api/lead', payload);
-    return postJsonRetry<LeadResult>('/api/lead', payload);
+    void postJsonRetry<LeadResult>('/api/lead', payload);
+    return { ok: true, ref: savedRef };
   }
 
-  function onCtaClick(event: MouseEvent<HTMLElement>) {
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  async function onCtaClick(event: MouseEvent<HTMLElement>) {
     event.preventDefault();
-    const wa = buildWhatsAppUrl(visitRef.current.ref);
-    void persistLead();
-    window.open(wa, '_blank', 'noopener,noreferrer');
+    event.stopPropagation();
+    if (busy) return;
+    setBusy(true);
+    const popup = window.open('about:blank', '_blank');
+    try {
+      const result = await persistLead();
+      const ref = result?.ref ? result.ref.toUpperCase() : '';
+      if (!isValidRef(ref)) {
+        popup?.close();
+        return;
+      }
+      const wa = buildWhatsAppUrl(ref);
+      if (!wa) {
+        popup?.close();
+        return;
+      }
+      if (popup && !popup.closed) popup.location.replace(wa);
+      else window.location.assign(wa);
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -95,14 +128,13 @@ export default function App() {
         <div className="cta-block">
           <p className="benefit">100% DE BENEFICIO</p>
           <SpecularButton
-            href={waUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+            type="button"
             ariaLabel="Activar beneficio"
             className={busy ? 'specular-cta is-busy' : 'specular-cta'}
             size="lg"
             radius={14}
             textColor="#ffffff"
+            disabled={busy}
             onClick={onCtaClick}
           >
             <span className="wa" aria-hidden="true">

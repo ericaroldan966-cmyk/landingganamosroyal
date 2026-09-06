@@ -14,18 +14,21 @@ export async function postJson<T>(path: string, body: unknown): Promise<T | null
       body: JSON.stringify(body),
       keepalive: true,
     });
+    if (!response.ok) return null;
     const text = await response.text();
-    return text ? JSON.parse(text) as T : null;
+    const data = text ? JSON.parse(text) as T : null;
+    if (!data || typeof data !== 'object') return null;
+    return data;
   } catch {
     return null;
   }
 }
 
-export async function postJsonRetry<T>(path: string, body: unknown, attempts = 3): Promise<T | null> {
+export async function postJsonRetry<T extends { ref?: string }>(path: string, body: unknown, attempts = 5): Promise<T | null> {
   for (let i = 0; i < attempts; i++) {
     const result = await postJson<T>(path, body);
-    if (result) return result;
-    await new Promise((resolve) => setTimeout(resolve, 300 * (i + 1)));
+    if (result?.ref) return result;
+    await new Promise((resolve) => setTimeout(resolve, 400 * (i + 1)));
   }
   return null;
 }

@@ -33,6 +33,10 @@ export function makeRef(): string {
   return 'REF-' + out;
 }
 
+export function isValidRef(ref: string): boolean {
+  return /^REF-[A-Z0-9]{6,12}$/.test(ref);
+}
+
 export function getCookie(name: string): string {
   const match = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/[$()*+./?[\\\]^{|}]/g, '\\$&') + '=([^;]*)'));
   return match ? decodeURIComponent(match[1]) : '';
