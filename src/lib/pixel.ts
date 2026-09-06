@@ -10,8 +10,21 @@ type FbqFn = ((...args: unknown[]) => void) & {
 
 let pageViewSent = false;
 
+function isPixelId(value: string): boolean {
+  return /^\d{5,20}$/.test(value);
+}
+
+function pixelIds(): string[] {
+  const ids: string[] = [];
+  for (const id of [CONFIG.PIXEL_ID, CONFIG.PIXEL_ID_2]) {
+    if (isPixelId(id) && !ids.includes(id)) ids.push(id);
+  }
+  return ids;
+}
+
 export function initPixel(): void {
-  if (!/^\d{5,20}$/.test(CONFIG.PIXEL_ID)) return;
+  const ids = pixelIds();
+  if (!ids.length) return;
   if (!window.fbq) {
     const fbq: FbqFn = function (...args: unknown[]) {
       if (fbq.callMethod) fbq.callMethod(...args);
@@ -30,7 +43,9 @@ export function initPixel(): void {
     if (first && first.parentNode) first.parentNode.insertBefore(script, first);
     else document.head.appendChild(script);
   }
-  window.fbq?.('init', CONFIG.PIXEL_ID);
+  for (const id of ids) {
+    window.fbq?.('init', id);
+  }
   if (!pageViewSent) {
     window.fbq?.('track', 'PageView');
     pageViewSent = true;
