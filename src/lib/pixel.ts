@@ -22,7 +22,7 @@ function pixelIds(): string[] {
   return ids;
 }
 
-export function initPixel(): void {
+export function initPixel(pageViewId?: string): void {
   const ids = pixelIds();
   if (!ids.length) return;
   if (!window.fbq) {
@@ -47,7 +47,8 @@ export function initPixel(): void {
     window.fbq?.('init', id);
   }
   if (!pageViewSent) {
-    window.fbq?.('track', 'PageView');
+    if (pageViewId) window.fbq?.('track', 'PageView', {}, { eventID: pageViewId });
+    else window.fbq?.('track', 'PageView');
     pageViewSent = true;
   }
 }

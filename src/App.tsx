@@ -20,9 +20,9 @@ export default function App() {
   }
 
   useEffect(() => {
-    initPixel();
     const visit = refreshCookies(visitRef.current);
     visitRef.current = visit;
+    initPixel('pv_' + visit.ref);
     void postJson<LeadResult>('/api/visit', visitPayload(visit)).then((result) => {
       if (result?.ref) applyRef(result.ref);
     });
