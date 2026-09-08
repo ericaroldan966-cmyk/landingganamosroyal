@@ -46,14 +46,23 @@ export function initPixel(pageViewId?: string): void {
   for (const id of ids) {
     window.fbq?.('init', id);
   }
+  console.log('[PIXEL] init →', ids.join(', '));
   if (!pageViewSent) {
     if (pageViewId) window.fbq?.('track', 'PageView', {}, { eventID: pageViewId });
     else window.fbq?.('track', 'PageView');
     pageViewSent = true;
+    console.log('[PIXEL] PageView →', ids.join(', '), pageViewId || '(sin event_id)');
   }
 }
 
 export function trackBrowserLead(eventId: string): void {
   if (typeof window.fbq !== 'function') return;
   window.fbq('track', 'Lead', {}, { eventID: eventId });
+  console.log('[PIXEL] Lead →', pixelIds().join(', '), eventId);
+}
+
+export function trackBrowserCheckout(eventId: string): void {
+  if (typeof window.fbq !== 'function') return;
+  window.fbq('track', 'InitiateCheckout', {}, { eventID: eventId });
+  console.log('[PIXEL] InitiateCheckout →', pixelIds().join(', '), eventId);
 }

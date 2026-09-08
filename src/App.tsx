@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import { postBeacon, postJson, postJsonRetry, buildWhatsAppUrl } from './lib/api';
-import { initPixel, trackBrowserLead } from './lib/pixel';
+import { initPixel, trackBrowserLead, trackBrowserCheckout } from './lib/pixel';
 import DepthText from './components/DepthText';
 import SpecularButton from './components/SpecularButton';
 import { captureVisit, isValidRef, refreshCookies, saveStored, visitPayload, type VisitData } from './lib/visit';
@@ -53,6 +53,7 @@ export default function App() {
     const payload = { ...visitPayload(current), event_id: eventId };
     if (!current.lead_sent) {
       trackBrowserLead(eventId);
+      trackBrowserCheckout('ic_' + current.ref);
       current.lead_sent = true;
       saveStored(current);
     }
