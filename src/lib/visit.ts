@@ -1,3 +1,5 @@
+import { CONFIG } from '../config';
+
 const STORAGE_KEY = 'gn_visit';
 const REF_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 export const ATTR_KEYS = [
@@ -138,5 +140,6 @@ export function visitPayload(data: VisitData) {
     ad_name: data.ad_name,
     landing_url: data.landing_url,
     referrer: data.referrer,
+    tenant: CONFIG.TENANT,
   };
 }
