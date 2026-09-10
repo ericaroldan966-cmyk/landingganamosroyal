@@ -7,6 +7,23 @@ import { captureVisit, isValidRef, refreshCookies, saveStored, visitPayload, typ
 
 type LeadResult = { ok?: boolean; ref?: string };
 
+function paintPopup(popup: Window | null, title: string, message: string): void {
+  if (!popup || popup.closed) return;
+  try {
+    popup.document.open();
+    popup.document.write(
+      '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' +
+        title +
+        '</title><style>html,body{height:100%;margin:0;background:#0b0614;color:#f5d0fe;font-family:system-ui,sans-serif;display:grid;place-items:center;text-align:center;padding:24px}p{max-width:20em;line-height:1.45}</style></head><body><p>' +
+        message +
+        '</p></body></html>',
+    );
+    popup.document.close();
+  } catch {
+    /* ignore */
+  }
+}
+
 export default function App() {
   const visitRef = useRef<VisitData>(captureVisit());
   const [busy, setBusy] = useState(false);
@@ -69,16 +86,19 @@ export default function App() {
     setBusy(true);
     setCtaError('');
     const popup = window.open('about:blank', '_blank');
+    paintPopup(popup, 'WhatsApp', 'Abriendo WhatsApp...');
     try {
       const result = await persistLead();
       const ref = result?.ref ? result.ref.toUpperCase() : '';
       if (!isValidRef(ref)) {
+        paintPopup(popup, 'Error', 'No pudimos generar tu código. Cerrá esta pestaña y tocá de nuevo.');
         popup?.close();
         setCtaError('No pudimos generar tu código. Tocá de nuevo para reintentar.');
         return;
       }
       const wa = buildWhatsAppUrl(ref);
       if (!wa) {
+        paintPopup(popup, 'Error', 'No pudimos generar tu código. Cerrá esta pestaña y tocá de nuevo.');
         popup?.close();
         setCtaError('No pudimos generar tu código. Tocá de nuevo para reintentar.');
         return;
