@@ -13,7 +13,8 @@ export default function App() {
   const [ctaError, setCtaError] = useState('');
 
   function applyRef(ref: string): string {
-    const next = ref.toUpperCase();
+    const raw = String(ref || '').trim();
+    const next = /^\d{1,10}$/.test(raw) ? raw : raw.toUpperCase();
     if (!isValidRef(next)) return visitRef.current.ref;
     visitRef.current.ref = next;
     visitRef.current.ref_confirmed = true;

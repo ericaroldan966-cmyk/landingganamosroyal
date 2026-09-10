@@ -24,6 +24,7 @@ export type VisitData = {
   referrer: string;
   fbp: string;
   fbc: string;
+  a?: number;
   wa_line?: string;
   lead_sent?: boolean;
 } & Record<(typeof ATTR_KEYS)[number], string>;
@@ -37,16 +38,19 @@ export function makeRef(): string {
 }
 
 export function isValidRef(ref: string): boolean {
-  return /^REF-[A-Z0-9]{6,12}$/.test(ref);
+  const raw = String(ref || '').trim();
+  return /^\d{1,10}$/.test(raw) || /^REF-[A-Z0-9]{6,12}$/.test(raw.toUpperCase());
 }
 
 export function normalizeRef(ref: string): string {
-  const compact = String(ref || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const raw = String(ref || '').trim();
+  if (/^\d{1,10}$/.test(raw)) return raw;
+  const compact = raw.toUpperCase().replace(/[^A-Z0-9]/g, '');
   if (compact.startsWith('REF') && compact.length >= 9 && compact.length <= 15) {
     const next = 'REF-' + compact.slice(3);
-    return isValidRef(next) ? next : '';
+    return /^REF-[A-Z0-9]{6,12}$/.test(next) ? next : '';
   }
-  if (/^[A-Z0-9]{6,12}$/.test(compact)) return 'REF-' + compact;
+  if (/^[A-Z0-9]{6,12}$/.test(compact) && /[A-Z]/.test(compact)) return 'REF-' + compact;
   return '';
 }
 
@@ -92,6 +96,9 @@ export function captureVisit(): VisitData {
   for (const key of ATTR_KEYS) {
     data[key] = params.get(key) || stored[key] || '';
   }
+
+  const ad = Number(params.get('a') || stored.a || 0);
+  data.a = Number.isInteger(ad) && ad >= 1 ? ad : 0;
 
   const cookieFbc = getCookie('_fbc');
   const cookieFbp = getCookie('_fbp');
@@ -141,5 +148,6 @@ export function visitPayload(data: VisitData) {
     landing_url: data.landing_url,
     referrer: data.referrer,
     tenant: CONFIG.TENANT,
+    a: data.a && data.a >= 1 ? data.a : undefined,
   };
 }
