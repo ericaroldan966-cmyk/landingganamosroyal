@@ -29,7 +29,7 @@ export async function postJson<T>(path: string, body: unknown): Promise<T | null
   }
 }
 
-export async function postJsonRetry<T extends { ref?: string }>(path: string, body: unknown, attempts = 1): Promise<T | null> {
+export async function postJsonRetry<T extends { ref?: string }>(path: string, body: unknown, attempts = 3): Promise<T | null> {
   for (let i = 0; i < attempts; i++) {
     const result = await postJson<T>(path, body);
     if (result?.ref) return result;
