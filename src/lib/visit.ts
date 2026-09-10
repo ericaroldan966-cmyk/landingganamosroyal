@@ -37,18 +37,35 @@ export function makeRef(): string {
   return 'REF-' + out;
 }
 
-export function isValidRef(ref: string): boolean {
+export function unwrapDisplayCode(ref: string): string {
   const raw = String(ref || '').trim();
+  const visual = raw.toUpperCase().match(/^REF-(\d{1,10})$/);
+  if (visual) return visual[1];
+  return raw;
+}
+
+export function displayCode(ref: string): string {
+  const raw = unwrapDisplayCode(ref);
+  if (/^\d{1,10}$/.test(raw)) return 'REF-' + raw;
+  return raw;
+}
+
+export function isValidRef(ref: string): boolean {
+  const raw = unwrapDisplayCode(ref);
   return /^\d{1,10}$/.test(raw) || /^REF-[A-Z0-9]{6,12}$/.test(raw.toUpperCase());
 }
 
 export function normalizeRef(ref: string): string {
-  const raw = String(ref || '').trim();
+  const raw = unwrapDisplayCode(String(ref || '').trim());
   if (/^\d{1,10}$/.test(raw)) return raw;
   const compact = raw.toUpperCase().replace(/[^A-Z0-9]/g, '');
-  if (compact.startsWith('REF') && compact.length >= 9 && compact.length <= 15) {
-    const next = 'REF-' + compact.slice(3);
-    return /^REF-[A-Z0-9]{6,12}$/.test(next) ? next : '';
+  if (compact.startsWith('REF')) {
+    const rest = compact.slice(3);
+    if (/^\d{1,10}$/.test(rest)) return rest;
+    if (compact.length >= 9 && compact.length <= 15) {
+      const next = 'REF-' + rest;
+      return /^REF-[A-Z0-9]{6,12}$/.test(next) ? next : '';
+    }
   }
   if (/^[A-Z0-9]{6,12}$/.test(compact) && /[A-Z]/.test(compact)) return 'REF-' + compact;
   return '';
