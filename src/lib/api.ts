@@ -8,13 +8,12 @@ export async function postJson<T>(path: string, body: unknown): Promise<T | null
   const url = apiUrl(path);
   if (!url) return null;
   const controller = new AbortController();
-  const timer = window.setTimeout(() => controller.abort(), 8000);
+  const timer = window.setTimeout(() => controller.abort(), 5000);
   try {
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
-      keepalive: true,
       signal: controller.signal,
     });
     if (!response.ok) return null;
@@ -29,7 +28,7 @@ export async function postJson<T>(path: string, body: unknown): Promise<T | null
   }
 }
 
-export async function postJsonRetry<T extends { ref?: string }>(path: string, body: unknown, attempts = 3): Promise<T | null> {
+export async function postJsonRetry<T extends { ref?: string }>(path: string, body: unknown, attempts = 1): Promise<T | null> {
   for (let i = 0; i < attempts; i++) {
     const result = await postJson<T>(path, body);
     if (result?.ref) return result;

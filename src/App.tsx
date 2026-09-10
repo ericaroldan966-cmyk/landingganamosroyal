@@ -63,7 +63,9 @@ export default function App() {
     const visit = refreshCookies(visitRef.current);
     visitRef.current = visit;
     const visitResult = await postJsonRetry<LeadResult>('/api/visit', visitPayload(visit));
-    const savedRef = visitResult?.ref ? applyRef(visitResult.ref) : '';
+    const savedRef = visitResult?.ref
+      ? applyRef(visitResult.ref)
+      : (visit.ref_confirmed && isValidRef(visit.ref) ? visit.ref : '');
     if (!isValidRef(savedRef)) return null;
 
     const current = visitRef.current;
@@ -79,32 +81,31 @@ export default function App() {
     return { ok: true, ref: savedRef };
   }
 
+  function openWhatsApp(ref: string, popup: Window | null): boolean {
+    const wa = buildWhatsAppUrl(ref);
+    if (!wa) return false;
+    if (popup && !popup.closed) popup.location.replace(wa);
+    else window.location.assign(wa);
+    return true;
+  }
+
   async function onCtaClick(event: MouseEvent<HTMLElement>) {
     event.preventDefault();
     event.stopPropagation();
     if (busy) return;
     setBusy(true);
     setCtaError('');
-    const popup = window.open('about:blank', '_blank');
-    paintPopup(popup, 'WhatsApp', 'Abriendo WhatsApp...');
+    const known = visitRef.current.ref_confirmed && isValidRef(visitRef.current.ref) ? visitRef.current.ref : '';
+    const popup = window.open(known ? buildWhatsAppUrl(known) : 'about:blank', '_blank');
+    if (!known) paintPopup(popup, 'WhatsApp', 'Abriendo WhatsApp...');
     try {
       const result = await persistLead();
-      const ref = result?.ref ? result.ref.toUpperCase() : '';
-      if (!isValidRef(ref)) {
+      const ref = result?.ref ? applyRef(result.ref) : known;
+      if (!isValidRef(ref) || !openWhatsApp(ref, popup)) {
         paintPopup(popup, 'Error', 'No pudimos generar tu código. Cerrá esta pestaña y tocá de nuevo.');
         popup?.close();
         setCtaError('No pudimos generar tu código. Tocá de nuevo para reintentar.');
-        return;
       }
-      const wa = buildWhatsAppUrl(ref);
-      if (!wa) {
-        paintPopup(popup, 'Error', 'No pudimos generar tu código. Cerrá esta pestaña y tocá de nuevo.');
-        popup?.close();
-        setCtaError('No pudimos generar tu código. Tocá de nuevo para reintentar.');
-        return;
-      }
-      if (popup && !popup.closed) popup.location.replace(wa);
-      else window.location.assign(wa);
     } finally {
       setBusy(false);
     }
