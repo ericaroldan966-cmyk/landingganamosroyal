@@ -39,7 +39,8 @@ export function makeRef(): string {
 
 export function unwrapDisplayCode(ref: string): string {
   const raw = String(ref || '').trim();
-  const visual = raw.toUpperCase().match(/^REF-(\d{1,10})$/);
+  const glued = raw.toUpperCase().replace(/[\u2011\u2060]/g, '-').replace(/[\s\u00A0]+/g, '');
+  const visual = glued.match(/^REF-?(\d{1,10})$/);
   if (visual) return visual[1];
   return raw;
 }
@@ -47,6 +48,12 @@ export function unwrapDisplayCode(ref: string): string {
 export function displayCode(ref: string): string {
   const raw = unwrapDisplayCode(ref);
   if (/^\d{1,10}$/.test(raw)) return 'REF-' + raw;
+  return raw;
+}
+
+export function whatsappCode(ref: string): string {
+  const raw = unwrapDisplayCode(ref);
+  if (/^\d{1,10}$/.test(raw)) return 'REF-\u2060' + raw;
   return raw;
 }
 

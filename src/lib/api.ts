@@ -1,5 +1,5 @@
 import { CONFIG, pickWhatsAppNumber } from '../config';
-import { displayCode, unwrapDisplayCode } from './visit';
+import { whatsappCode, unwrapDisplayCode } from './visit';
 
 function apiUrl(path: string): string {
   return CONFIG.API_URL ? CONFIG.API_URL + path : '';
@@ -50,6 +50,6 @@ export function postBeacon(path: string, body: unknown): boolean {
 
 export function buildWhatsAppUrl(ref: string): string {
   const code = unwrapDisplayCode(ref);
-  const text = 'Hola, quiero más información. ' + displayCode(code) + ' quiero mi 100%!';
+  const text = 'Hola, quiero más información. ' + whatsappCode(code) + ' quiero mi 100%!';
   return 'https://wa.me/' + pickWhatsAppNumber(code) + '?text=' + encodeURIComponent(text);
 }
