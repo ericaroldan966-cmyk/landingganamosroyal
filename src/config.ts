@@ -2,7 +2,12 @@ const host = window.location.hostname;
 const isLocal = host === 'localhost' || host === '127.0.0.1';
 
 const WHATSAPP_LINES = [
+  '5491140923175',
+  '5492235471076',
+  '5491140925444',
+  '5491125693189',
   '5491134264064',
+  '5491125689335',
 ] as const;
 
 function isKnownLine(value: string): boolean {
