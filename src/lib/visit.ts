@@ -58,8 +58,7 @@ export function whatsappCode(ref: string): string {
 }
 
 export function isValidRef(ref: string): boolean {
-  const raw = unwrapDisplayCode(ref);
-  return /^\d{1,10}$/.test(raw) || /^REF-[A-Z0-9]{6,12}$/.test(raw.toUpperCase());
+  return /^\d{1,10}$/.test(unwrapDisplayCode(ref));
 }
 
 export function normalizeRef(ref: string): string {
@@ -137,6 +136,10 @@ export function captureVisit(): VisitData {
   data.wa_line = stored.wa_line;
   data.lead_sent = stored.lead_sent;
   data.ref_confirmed = Boolean(data.ref_confirmed && isValidRef(data.ref));
+  if (!isValidRef(data.ref)) {
+    data.ref = '';
+    data.ref_confirmed = false;
+  }
   saveStored(data);
   return data;
 }
