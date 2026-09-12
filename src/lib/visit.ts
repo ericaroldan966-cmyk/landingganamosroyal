@@ -1,7 +1,6 @@
 import { CONFIG } from '../config';
 
 const STORAGE_KEY = 'gn_visit';
-const REF_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 export const ATTR_KEYS = [
   'fbclid',
   'utm_source',
@@ -29,14 +28,6 @@ export type VisitData = {
   lead_sent?: boolean;
 } & Record<(typeof ATTR_KEYS)[number], string>;
 
-export function makeRef(): string {
-  let out = '';
-  for (let i = 0; i < 6; i++) {
-    out += REF_CHARS.charAt(Math.floor(Math.random() * REF_CHARS.length));
-  }
-  return 'REF-' + out;
-}
-
 export function unwrapDisplayCode(ref: string): string {
   const raw = String(ref || '').trim();
   const glued = raw.toUpperCase().replace(/[\u2011\u2060]/g, '-').replace(/[\s\u00A0]+/g, '');
@@ -47,14 +38,12 @@ export function unwrapDisplayCode(ref: string): string {
 
 export function displayCode(ref: string): string {
   const raw = unwrapDisplayCode(ref);
-  if (/^\d{1,10}$/.test(raw)) return 'REF-' + raw;
-  return raw;
+  return /^\d{1,10}$/.test(raw) ? 'REF-' + raw : '';
 }
 
 export function whatsappCode(ref: string): string {
   const raw = unwrapDisplayCode(ref);
-  if (/^\d{1,10}$/.test(raw)) return 'REF-\u2060' + raw;
-  return raw;
+  return /^\d{1,10}$/.test(raw) ? 'REF-\u2060' + raw : '';
 }
 
 export function isValidRef(ref: string): boolean {
@@ -68,12 +57,7 @@ export function normalizeRef(ref: string): string {
   if (compact.startsWith('REF')) {
     const rest = compact.slice(3);
     if (/^\d{1,10}$/.test(rest)) return rest;
-    if (compact.length >= 9 && compact.length <= 15) {
-      const next = 'REF-' + rest;
-      return /^REF-[A-Z0-9]{6,12}$/.test(next) ? next : '';
-    }
   }
-  if (/^[A-Z0-9]{6,12}$/.test(compact) && /[A-Z]/.test(compact)) return 'REF-' + compact;
   return '';
 }
 

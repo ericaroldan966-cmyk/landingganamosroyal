@@ -3,7 +3,7 @@ import { postBeacon, postJson, postJsonRetry, buildWhatsAppUrl } from './lib/api
 import { initPixel, trackBrowserLead, trackBrowserCheckout } from './lib/pixel';
 import DepthText from './components/DepthText';
 import SpecularButton from './components/SpecularButton';
-import { captureVisit, isValidRef, refreshCookies, saveStored, visitPayload, type VisitData } from './lib/visit';
+import { captureVisit, isValidRef, refreshCookies, saveStored, unwrapDisplayCode, visitPayload, type VisitData } from './lib/visit';
 
 type LeadResult = { ok?: boolean; ref?: string };
 
@@ -13,9 +13,8 @@ export default function App() {
   const [ctaError, setCtaError] = useState('');
 
   function applyRef(ref: string): string {
-    const raw = String(ref || '').trim();
-    const next = /^\d{1,10}$/.test(raw) ? raw : raw.toUpperCase();
-    if (!isValidRef(next)) return visitRef.current.ref;
+    const next = unwrapDisplayCode(String(ref || '').trim());
+    if (!isValidRef(next)) return '';
     visitRef.current.ref = next;
     visitRef.current.ref_confirmed = true;
     saveStored(visitRef.current);
