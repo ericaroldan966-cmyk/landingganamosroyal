@@ -45,9 +45,7 @@ export default function App() {
     const visit = refreshCookies(visitRef.current);
     visitRef.current = visit;
     const visitResult = await postJsonRetry<LeadResult>('/api/visit', visitPayload(visit));
-    const savedRef = visitResult?.ref
-      ? applyRef(visitResult.ref)
-      : (visit.ref_confirmed && isValidRef(visit.ref) ? visit.ref : '');
+    const savedRef = visitResult?.ref ? applyRef(visitResult.ref) : '';
     if (!isValidRef(savedRef)) return null;
 
     const current = visitRef.current;
@@ -77,11 +75,6 @@ export default function App() {
     setBusy(true);
     setCtaError('');
     try {
-      const known = visitRef.current.ref_confirmed && isValidRef(visitRef.current.ref) ? visitRef.current.ref : '';
-      if (known && goToWhatsApp(known)) {
-        void persistLead();
-        return;
-      }
       const result = await persistLead();
       const ref = result?.ref ? applyRef(result.ref) : '';
       if (!isValidRef(ref) || !goToWhatsApp(ref)) {
