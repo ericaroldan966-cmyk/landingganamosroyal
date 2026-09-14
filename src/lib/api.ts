@@ -51,6 +51,6 @@ export function postBeacon(path: string, body: unknown): boolean {
 export function buildWhatsAppUrl(ref: string): string {
   const code = unwrapDisplayCode(ref);
   if (!/^\d{1,10}$/.test(code)) return '';
-  const text = 'Hola, quiero más información. ' + whatsappCode(code) + ' quiero mi 100%!';
+  const text = 'Hola, quiero más información. ' + whatsappCode(code) + ' quiero mi beneficio';
   return 'https://wa.me/' + pickWhatsAppNumber(code) + '?text=' + encodeURIComponent(text);
 }
