@@ -5,7 +5,6 @@ const WHATSAPP_LINES = [
   '5491125693189',
   '5491140923175',
   '5491140925444',
-  '5491125689335',
 ] as const;
 
 function isKnownLine(value: string): boolean {
