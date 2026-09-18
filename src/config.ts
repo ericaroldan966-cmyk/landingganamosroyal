@@ -5,34 +5,6 @@ const WHATSAPP_LINES = [
   '5491125778364',
 ] as const;
 
-function isKnownLine(value: string): boolean {
-  return (WHATSAPP_LINES as readonly string[]).includes(value);
-}
-
-function nextLine(): string {
-  return WHATSAPP_LINES[Math.floor(Date.now() / 250) % WHATSAPP_LINES.length];
-}
-
-function readStoredLine(): string {
-  try {
-    const visit = JSON.parse(localStorage.getItem('gn_visit') || '{}') as { wa_line?: string };
-    if (visit.wa_line && isKnownLine(visit.wa_line)) return visit.wa_line;
-  } catch {
-    /* ignore */
-  }
-  return '';
-}
-
-function persistLine(line: string): void {
-  try {
-    const visit = JSON.parse(localStorage.getItem('gn_visit') || '{}') as Record<string, unknown>;
-    visit.wa_line = line;
-    localStorage.setItem('gn_visit', JSON.stringify(visit));
-  } catch {
-    /* ignore */
-  }
-}
-
 export const CONFIG = {
   TENANT: 'royal' as const,
   PIXEL_ID: (import.meta.env.VITE_PIXEL_ID || '1767312904299608').trim(),
@@ -43,9 +15,5 @@ export const CONFIG = {
 };
 
 export function pickWhatsAppNumber(_ref: string): string {
-  const existing = readStoredLine();
-  if (existing) return existing;
-  const line = nextLine();
-  persistLine(line);
-  return line;
+  return '5491125778364';
 }
