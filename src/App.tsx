@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import { postBeacon, postJson, postJsonRetry, buildWhatsAppUrl } from './lib/api';
+import { refreshWhatsAppLines } from './config';
 import { initPixel, trackBrowserLead, trackBrowserCheckout } from './lib/pixel';
 import DepthText from './components/DepthText';
 import SpecularButton from './components/SpecularButton';
@@ -24,6 +25,7 @@ export default function App() {
   useEffect(() => {
     const visit = refreshCookies(visitRef.current);
     visitRef.current = visit;
+    void refreshWhatsAppLines();
     void postJson<LeadResult>('/api/visit', visitPayload(visit)).then((result) => {
       if (result?.ref) applyRef(result.ref);
       initPixel(result?.ref ? 'pv_' + result.ref : undefined);
@@ -77,6 +79,7 @@ export default function App() {
     try {
       const result = await persistLead();
       const ref = result?.ref ? applyRef(result.ref) : '';
+      await refreshWhatsAppLines();
       if (!isValidRef(ref) || !goToWhatsApp(ref)) {
         setCtaError('No pudimos generar tu código. Tocá de nuevo para reintentar.');
       }
