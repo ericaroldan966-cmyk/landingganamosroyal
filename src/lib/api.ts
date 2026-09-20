@@ -13,7 +13,7 @@ export async function postJson<T>(path: string, body: unknown): Promise<T | null
   try {
     const response = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-Tenant': CONFIG.TENANT },
       body: JSON.stringify(body),
       signal: controller.signal,
     });
