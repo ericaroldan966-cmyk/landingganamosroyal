@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type MouseEvent } from 'react';
-import { postBeacon, postJson, postJsonRetry, buildWhatsAppUrl } from './lib/api';
+import { postBeacon, postJsonRetry, buildWhatsAppUrl } from './lib/api';
 import { refreshWhatsAppLines } from './config';
 import { initPixel, trackBrowserLead, trackBrowserCheckout } from './lib/pixel';
 import DepthText from './components/DepthText';
@@ -10,25 +10,42 @@ type LeadResult = { ok?: boolean; ref?: string };
 
 export default function App() {
   const visitRef = useRef<VisitData>(captureVisit());
+  const visitLock = useRef<Promise<string> | null>(null);
   const [busy, setBusy] = useState(false);
   const [ctaError, setCtaError] = useState('');
 
   function applyRef(ref: string): string {
     const next = unwrapDisplayCode(String(ref || '').trim());
     if (!isValidRef(next)) return '';
+    if (visitRef.current.ref_confirmed && isValidRef(visitRef.current.ref)) return visitRef.current.ref;
     visitRef.current.ref = next;
     visitRef.current.ref_confirmed = true;
     saveStored(visitRef.current);
     return next;
   }
 
+  async function ensurePerson(): Promise<string> {
+    if (visitRef.current.ref_confirmed && isValidRef(visitRef.current.ref)) return visitRef.current.ref;
+    if (!visitLock.current) {
+      visitLock.current = (async () => {
+        const visit = refreshCookies(visitRef.current);
+        visitRef.current = visit;
+        if (visit.ref_confirmed && isValidRef(visit.ref)) return visit.ref;
+        const result = await postJsonRetry<LeadResult>('/api/visit', visitPayload(visit));
+        const saved = result?.ref ? applyRef(result.ref) : '';
+        if (!saved) visitLock.current = null;
+        return saved;
+      })();
+    }
+    return visitLock.current;
+  }
+
   useEffect(() => {
     const visit = refreshCookies(visitRef.current);
     visitRef.current = visit;
     void refreshWhatsAppLines();
-    void postJson<LeadResult>('/api/visit', visitPayload(visit)).then((result) => {
-      if (result?.ref) applyRef(result.ref);
-      initPixel(result?.ref ? 'pv_' + result.ref : undefined);
+    void ensurePerson().then((ref) => {
+      initPixel(ref ? 'pv_' + ref : undefined);
     });
     const flushVisit = () => {
       if (!visitRef.current.ref_confirmed) return;
@@ -44,13 +61,10 @@ export default function App() {
   }, []);
 
   async function persistLead(): Promise<LeadResult | null> {
-    const visit = refreshCookies(visitRef.current);
-    visitRef.current = visit;
-    const visitResult = await postJsonRetry<LeadResult>('/api/visit', visitPayload(visit));
-    const savedRef = visitResult?.ref ? applyRef(visitResult.ref) : '';
+    const savedRef = await ensurePerson();
     if (!isValidRef(savedRef)) return null;
-
-    const current = visitRef.current;
+    const current = refreshCookies(visitRef.current);
+    visitRef.current = current;
     const eventId = 'lead_' + current.ref;
     const payload = { ...visitPayload(current), event_id: eventId };
     if (!current.lead_sent) {
