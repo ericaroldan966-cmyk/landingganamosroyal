@@ -55,8 +55,6 @@ export async function refreshWhatsAppLines(): Promise<string[]> {
       const next = (Array.isArray(data.numbers) ? data.numbers : []).map((item) => String(item || '')).filter(Boolean);
       if (next.length) {
         activeLines = next;
-        const stored = readStoredLine();
-        if (!stored) persistLine('');
         return activeLines;
       }
     }

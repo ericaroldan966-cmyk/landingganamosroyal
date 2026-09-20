@@ -30,7 +30,7 @@ export type VisitData = {
 
 export function unwrapDisplayCode(ref: string): string {
   const raw = String(ref || '').trim();
-  const glued = raw.toUpperCase().replace(/[\u2011\u2060]/g, '-').replace(/[\s\u00A0]+/g, '');
+  const glued = raw.toUpperCase().replace(/[\u200B-\u200D\u2060\uFEFF]/g, '').replace(/\u2011/g, '-').replace(/[\s\u00A0]+/g, '');
   const visual = glued.match(/^REF-?(\d{1,10})$/);
   if (visual) return visual[1];
   return raw;
