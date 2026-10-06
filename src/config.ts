@@ -2,10 +2,7 @@ const host = window.location.hostname;
 const isLocal = host === 'localhost' || host === '127.0.0.1';
 
 const FALLBACK_WHATSAPP_NUMBERS = [
-  '5491125689335',
-  '5491125778364',
-  '5491125546449',
-  '5491125693189',
+  '5491134264064',
 ];
 
 let activeLines: string[] = [...FALLBACK_WHATSAPP_NUMBERS];
