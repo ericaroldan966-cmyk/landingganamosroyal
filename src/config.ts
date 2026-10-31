@@ -1,9 +1,13 @@
 const host = window.location.hostname;
 const isLocal = host === 'localhost' || host === '127.0.0.1';
 
-const FALLBACK_WHATSAPP_NUMBERS = [
-  '5491134264064',
+const ROYAL_WHATSAPP_NUMBERS = [
+  '5491125189009',
+  '5491168716471',
+  '5491125189268',
 ];
+
+const FALLBACK_WHATSAPP_NUMBERS = ROYAL_WHATSAPP_NUMBERS;
 
 let activeLines: string[] = [...FALLBACK_WHATSAPP_NUMBERS];
 
@@ -41,6 +45,12 @@ export const CONFIG = {
   LANDING_URL: import.meta.env.VITE_LANDING_URL || 'https://ericaroldan966-cmyk.github.io/landingappganamos/',
 };
 
+function allowedLines(numbers: string[]): string[] {
+  const allowed = new Set(ROYAL_WHATSAPP_NUMBERS);
+  const next = numbers.filter((number) => allowed.has(number));
+  return next.length ? next : [...ROYAL_WHATSAPP_NUMBERS];
+}
+
 export async function refreshWhatsAppLines(): Promise<string[]> {
   const url = CONFIG.API_URL + '/api/whatsapp-lines?tenant=' + CONFIG.TENANT;
   const controller = new AbortController();
@@ -49,7 +59,7 @@ export async function refreshWhatsAppLines(): Promise<string[]> {
     const response = await fetch(url, { headers: { 'X-Tenant': CONFIG.TENANT }, signal: controller.signal });
     if (response.ok) {
       const data = await response.json() as { numbers?: string[] };
-      const next = (Array.isArray(data.numbers) ? data.numbers : []).map((item) => String(item || '')).filter(Boolean);
+      const next = allowedLines((Array.isArray(data.numbers) ? data.numbers : []).map((item) => String(item || '')).filter(Boolean));
       if (next.length) {
         activeLines = next;
         return activeLines;
