@@ -1,12 +1,16 @@
 const host = window.location.hostname;
 const isLocal = host === 'localhost' || host === '127.0.0.1';
 
+function normalizeWhatsAppLine(value: string): string {
+  return String(value || '').replace(/\D/g, '');
+}
+
 const ROYAL_WHATSAPP_NUMBERS = [
-  '+5491165525339',
-  '+5492236978842',
-  '+5491166226807',
-  '+5491168712339',
-  '+5491166226816',
+  '5491165525339',
+  '5492236978842',
+  '5491166226807',
+  '5491168712339',
+  '5491166226816',
 ];
 
 const FALLBACK_WHATSAPP_NUMBERS = ROYAL_WHATSAPP_NUMBERS;
@@ -20,7 +24,7 @@ function currentLines(): string[] {
 function readStoredLine(): string {
   try {
     const visit = JSON.parse(localStorage.getItem('gn_visit') || '{}') as { wa_line?: string };
-    const stored = String(visit.wa_line || '');
+    const stored = normalizeWhatsAppLine(String(visit.wa_line || ''));
     if (stored && currentLines().includes(stored)) return stored;
   } catch {
     /* ignore */
@@ -31,7 +35,7 @@ function readStoredLine(): string {
 function persistLine(line: string): void {
   try {
     const visit = JSON.parse(localStorage.getItem('gn_visit') || '{}') as Record<string, unknown>;
-    visit.wa_line = line;
+    visit.wa_line = normalizeWhatsAppLine(line);
     localStorage.setItem('gn_visit', JSON.stringify(visit));
   } catch {
     /* ignore */
@@ -48,8 +52,10 @@ export const CONFIG = {
 };
 
 function allowedLines(numbers: string[]): string[] {
-  const allowed = new Set(ROYAL_WHATSAPP_NUMBERS);
-  const next = numbers.filter((number) => allowed.has(number));
+  const allowed = new Set(ROYAL_WHATSAPP_NUMBERS.map(normalizeWhatsAppLine));
+  const next = numbers
+    .map(normalizeWhatsAppLine)
+    .filter((number) => number && allowed.has(number));
   return next.length ? next : [...ROYAL_WHATSAPP_NUMBERS];
 }
 
