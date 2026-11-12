@@ -3,6 +3,7 @@ const isLocal = host === 'localhost' || host === '127.0.0.1';
 
 const ROYAL_WHATSAPP_NUMBERS = [
   '+5491165525339',
+  '+5492236978842',
 ];
 
 const FALLBACK_WHATSAPP_NUMBERS = ROYAL_WHATSAPP_NUMBERS;
