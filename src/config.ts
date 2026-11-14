@@ -62,7 +62,8 @@ function allowedLines(numbers: string[]): string[] {
   const next = numbers
     .map(normalizeWhatsAppLine)
     .filter((number) => number && allowed.has(number));
-  return next.length ? next : [...ROYAL_WHATSAPP_NUMBERS];
+  // Empty/rejected API payloads must use the active-only fallback, never Apagadas.
+  return next.length ? next : [...FALLBACK_WHATSAPP_NUMBERS];
 }
 
 export async function refreshWhatsAppLines(): Promise<string[]> {
