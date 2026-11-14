@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type MouseEvent } from 'react';
-import { postBeacon, postJsonRetry, buildWhatsAppUrl } from './lib/api';
+import { postBeacon, postJsonRetry, postLeadKeepalive, buildWhatsAppUrl } from './lib/api';
 import { refreshWhatsAppLines } from './config';
 import { initPixel, trackBrowserLead, trackBrowserCheckout } from './lib/pixel';
 import DepthText from './components/DepthText';
@@ -11,6 +11,7 @@ type LeadResult = { ok?: boolean; ref?: string };
 export default function App() {
   const visitRef = useRef<VisitData>(captureVisit());
   const visitLock = useRef<Promise<string> | null>(null);
+  const pendingLeadPayload = useRef<Record<string, unknown> | null>(null);
   const [busy, setBusy] = useState(false);
   const [ctaError, setCtaError] = useState('');
 
@@ -47,16 +48,20 @@ export default function App() {
     void ensurePerson().then((ref) => {
       initPixel(ref ? 'pv_' + ref : undefined);
     });
-    const flushVisit = () => {
+    const flushPending = () => {
+      if (pendingLeadPayload.current) {
+        postLeadKeepalive(pendingLeadPayload.current);
+        postBeacon('/api/lead', pendingLeadPayload.current);
+      }
       if (!visitRef.current.ref_confirmed) return;
       postBeacon('/api/visit', visitPayload(visitRef.current));
     };
-    window.addEventListener('pagehide', flushVisit);
+    window.addEventListener('pagehide', flushPending);
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden) flushVisit();
+      if (document.hidden) flushPending();
     });
     return () => {
-      window.removeEventListener('pagehide', flushVisit);
+      window.removeEventListener('pagehide', flushPending);
     };
   }, []);
 
@@ -67,13 +72,26 @@ export default function App() {
     visitRef.current = current;
     const eventId = 'lead_' + current.ref;
     const payload = { ...visitPayload(current), event_id: eventId };
+    pendingLeadPayload.current = payload;
     if (!current.lead_sent) {
       trackBrowserLead(eventId);
       trackBrowserCheckout('ic_' + current.ref);
       current.lead_sent = true;
       saveStored(current);
     }
-    void postJsonRetry<LeadResult>('/api/lead', payload);
+    // Await the count write so "Llegaron" updates before WhatsApp opens.
+    // keepalive + pagehide beacon cover slow Meta / aborted navigations.
+    const result = await postJsonRetry<LeadResult>('/api/lead', payload, 3, {
+      timeoutMs: 8000,
+      keepalive: true,
+    });
+    if (result?.ref) {
+      pendingLeadPayload.current = null;
+      return result;
+    }
+    // Last resort: keep the request alive across the wa.me redirect.
+    postLeadKeepalive(payload);
+    postBeacon('/api/lead', payload);
     return { ok: true, ref: savedRef };
   }
 
@@ -91,9 +109,14 @@ export default function App() {
     setBusy(true);
     setCtaError('');
     try {
+      // Lines were loaded on mount; refresh in parallel without blocking the lead write.
+      const linesPromise = refreshWhatsAppLines();
       const result = await persistLead();
+      await Promise.race([
+        linesPromise,
+        new Promise((resolve) => window.setTimeout(resolve, 600)),
+      ]);
       const ref = result?.ref ? applyRef(result.ref) : '';
-      await refreshWhatsAppLines();
       if (!isValidRef(ref) || !goToWhatsApp(ref)) {
         setCtaError('No pudimos generar tu código. Tocá de nuevo para reintentar.');
       }
