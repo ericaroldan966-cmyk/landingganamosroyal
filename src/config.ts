@@ -5,12 +5,12 @@ function normalizeWhatsAppLine(value: string): string {
   return String(value || '').replace(/\D/g, '');
 }
 
+// Keep in sync with active Royal lines from the panel/API.
+// Stale fallbacks here can steal traffic if /api/whatsapp-lines fails.
 const ROYAL_WHATSAPP_NUMBERS = [
   '5491165525339',
   '5492236978842',
-  '5491166226807',
   '5491168712339',
-  '5491166226816',
 ];
 
 const FALLBACK_WHATSAPP_NUMBERS = ROYAL_WHATSAPP_NUMBERS;
