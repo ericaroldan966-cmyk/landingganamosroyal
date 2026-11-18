@@ -6,8 +6,9 @@ function normalizeWhatsAppLine(value: string): string {
 }
 
 // Allowlist: numbers the landing may accept from the panel/API (incl. Apagadas).
-// 5339 stays out permanently. Fallback is only known-good actives if API fails.
+// Fallback is only known-good actives if API fails.
 const ROYAL_WHATSAPP_NUMBERS = [
+  '5491165525339',
   '5492236978842',
   '5491168712339',
   '5491166226807',
